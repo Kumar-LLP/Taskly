@@ -102,7 +102,7 @@ Taskly is completely serverless and requires **no installation, Node.js, or buil
 
 Have suggestions or feedback?
 - **Email**: [peek.exc@gmail.com](mailto:peek.exc@gmail.com)
-- **Phone**: [+977 9744363847](tel:+9779744363847)
+- **Phone**: [+977 9800000000](tel:+9779800000000)
 
 ---
 
