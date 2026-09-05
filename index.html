@@ -331,6 +331,7 @@
                             <button class="pomodoro-preset-btn" onclick="setPomodoroPreset(5, this)">5m Break</button>
                             <button class="pomodoro-preset-btn" onclick="setPomodoroPreset(15, this)">15m Rest</button>
                             <button class="pomodoro-preset-btn" onclick="setPomodoroPreset(50, this)">50m Deep</button>
+                            <button class="pomodoro-preset-btn" onclick="promptCustomPomodoro(this)">⚙️ Custom</button>
                         </div>
 
                         <div class="timer-box">
@@ -346,9 +347,20 @@
                                 </button>
                             </div>
 
-                            <button id="timerSoundBtn" class="timer-sound-btn" onclick="toggleSound()">
-                                🔔 Sound Alert: On
-                            </button>
+                            <div class="timer-sound-row">
+                                <button id="timerSoundBtn" class="timer-sound-btn" onclick="toggleSound()">
+                                    🔔 Sound: On
+                                </button>
+                                <div class="sound-tone-group">
+                                    <select id="timerSoundTone" class="sound-tone-select" onchange="changeSoundTone(this.value)" title="Choose completion chime">
+                                        <option value="chime">🎵 Melodic Chime</option>
+                                        <option value="bell">🧘 Zen Bell</option>
+                                        <option value="beep">⏰ Digital Beep</option>
+                                        <option value="marimba">🌴 Upbeat Marimba</option>
+                                    </select>
+                                    <button class="sound-preview-btn" onclick="previewCurrentSound()" title="Preview Sound Effect">▶</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -406,6 +418,11 @@
                                 <label for="completedWork">Completed Units</label>
                                 <input type="number" id="completedWork" min="0" placeholder="e.g., 2">
                             </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subtasksInput">Milestones / Subtasks (Optional, comma-separated)</label>
+                            <input id="subtasksInput" placeholder="e.g., Read theory, Solve problems, Check solutions">
                         </div>
 
                         <button class="btn-primary btn-block" onclick="addTask()">
@@ -478,6 +495,11 @@
                     <label for="editCompletedWork">Completed Units</label>
                     <input type="number" id="editCompletedWork" min="0">
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label for="editSubtasks">Milestones / Subtasks (Optional, comma-separated)</label>
+                <input id="editSubtasks" placeholder="e.g., Chapter 1, Practice questions, Quiz">
             </div>
 
             <button class="btn-primary btn-block" onclick="saveEditedTask()">

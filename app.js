@@ -9,7 +9,8 @@ const STORAGE_KEYS = {
     TASKS: "tasklyTasks",
     THEME: "tasklyTheme",
     DAILY_STATS: "tasklyDailyStats",
-    SOUND: "tasklySoundEnabled"
+    SOUND: "tasklySoundEnabled",
+    SOUND_TONE: "tasklySoundTone"
 };
 
 // Default sample tasks for new users
@@ -21,11 +22,16 @@ const DEFAULT_TASKS = [
         subject: "Derivatives & Integrals",
         priority: "high",
         dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
-        totalWork: 10,
-        completedWork: 6,
+        totalWork: 3,
+        completedWork: 2,
         completed: false,
         actualSeconds: 2720,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        subtasks: [
+            { id: 1, text: "Derivatives of trigonometric functions", completed: true },
+            { id: 2, text: "Chain rule practice problems 1-5", completed: true },
+            { id: 3, text: "Integration by parts exercises", completed: false }
+        ]
     },
     {
         id: 1710000002,
@@ -34,11 +40,16 @@ const DEFAULT_TASKS = [
         subject: "Kinematics & Dynamics",
         priority: "medium",
         dueDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-        totalWork: 8,
-        completedWork: 8,
+        totalWork: 2,
+        completedWork: 2,
         completed: true,
+        completedAt: new Date().toISOString(),
         actualSeconds: 4200,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        subtasks: [
+            { id: 1, text: "Equations of motion numericals", completed: true },
+            { id: 2, text: "Newton's laws free-body diagrams", completed: true }
+        ]
     },
     {
         id: 1710000003,
@@ -47,11 +58,16 @@ const DEFAULT_TASKS = [
         subject: "Cardio",
         priority: "low",
         dueDate: new Date().toISOString().split('T')[0], // Today
-        totalWork: 5,
-        completedWork: 3,
+        totalWork: 3,
+        completedWork: 2,
         completed: false,
         actualSeconds: 1500,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        subtasks: [
+            { id: 1, text: "Warm-up dynamic stretching", completed: true },
+            { id: 2, text: "5K brisk steady-pace run", completed: true },
+            { id: 3, text: "Cool-down and foam rolling", completed: false }
+        ]
     }
 ];
 
@@ -67,6 +83,7 @@ let pomodoroDuration = 25 * 60; // default 25 mins
 let pomodoroRemaining = 25 * 60;
 let isTimerRunning = false;
 let soundEnabled = localStorage.getItem(STORAGE_KEYS.SOUND) !== "false";
+let soundTone = localStorage.getItem(STORAGE_KEYS.SOUND_TONE) || "chime";
 
 // Filter & Search State
 let currentCategoryFilter = "All";
@@ -151,47 +168,105 @@ function updateDateTime() {
 // 3. AUDIO SYNTHESIZER (WEB AUDIO API)
 // ==========================================================================
 
-function playTimerChime() {
+function playTimerChime(toneOverride) {
     if (!soundEnabled) return;
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
         const ctx = new AudioCtx();
         const now = ctx.currentTime;
+        const tone = toneOverride || soundTone || "chime";
 
-        // Pleasant melodic chord progression (C5 -> E5 -> G5)
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach((freq, index) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(freq, now + index * 0.12);
-
-            gain.gain.setValueAtTime(0.25, now + index * 0.12);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.12 + 0.9);
-
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-
-            osc.start(now + index * 0.12);
-            osc.stop(now + index * 0.12 + 0.95);
-        });
+        if (tone === "bell") {
+            // Zen Singing Bowl / Gong: resonant fundamental with long exponential decay
+            [440, 880, 1320].forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(freq, now);
+                const volume = 0.25 / (i + 1);
+                gain.gain.setValueAtTime(volume, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 1.85);
+            });
+        } else if (tone === "beep") {
+            // Digital Stopwatch Double-Beep
+            [0, 0.16].forEach((offset) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "square";
+                osc.frequency.setValueAtTime(880, now + offset);
+                gain.gain.setValueAtTime(0.12, now + offset);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.1);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + offset);
+                osc.stop(now + offset + 0.12);
+            });
+        } else if (tone === "marimba") {
+            // Upbeat Marimba Arpeggio (D5, F#5, A5, D6)
+            const notes = [587.33, 739.99, 880.00, 1174.66];
+            notes.forEach((freq, index) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(freq, now + index * 0.1);
+                gain.gain.setValueAtTime(0.28, now + index * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.1 + 0.35);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + index * 0.1);
+                osc.stop(now + index * 0.1 + 0.4);
+            });
+        } else {
+            // Default "chime": Pleasant melodic chord progression (C5 -> E5 -> G5 -> C6)
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, index) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(freq, now + index * 0.12);
+                gain.gain.setValueAtTime(0.25, now + index * 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.12 + 0.9);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + index * 0.12);
+                osc.stop(now + index * 0.12 + 0.95);
+            });
+        }
     } catch (err) {
         console.warn("Audio synthesis error:", err);
     }
+}
+
+function changeSoundTone(tone) {
+    soundTone = tone;
+    localStorage.setItem(STORAGE_KEYS.SOUND_TONE, tone);
+    previewCurrentSound();
+}
+
+function previewCurrentSound() {
+    playTimerChime(soundTone);
 }
 
 function toggleSound() {
     soundEnabled = !soundEnabled;
     localStorage.setItem(STORAGE_KEYS.SOUND, soundEnabled);
     updateSoundButtonUI();
+    if (soundEnabled) previewCurrentSound();
 }
 
 function updateSoundButtonUI() {
     const soundBtn = document.getElementById("timerSoundBtn");
     if (soundBtn) {
-        soundBtn.innerHTML = soundEnabled ? "🔔 Sound Alert: On" : "🔕 Sound Alert: Muted";
+        soundBtn.innerHTML = soundEnabled ? "🔔 Sound: On" : "🔕 Sound: Muted";
+    }
+    const soundToneSelect = document.getElementById("timerSoundTone");
+    if (soundToneSelect) {
+        soundToneSelect.value = soundTone;
     }
 }
 
@@ -219,6 +294,23 @@ function setPomodoroPreset(minutes, element) {
     if (element) element.classList.add("active");
 
     renderTimerDisplay();
+}
+
+function promptCustomPomodoro(element) {
+    const defaultMins = Math.round(pomodoroDuration / 60) || 25;
+    const input = prompt("Enter custom focus duration in minutes (1 to 180):", defaultMins);
+    if (!input) return;
+
+    const mins = parseInt(input.trim(), 10);
+    if (isNaN(mins) || mins < 1 || mins > 180) {
+        alert("Please enter a valid duration between 1 and 180 minutes.");
+        return;
+    }
+
+    if (element) {
+        element.innerText = `⚙️ ${mins}m`;
+    }
+    setPomodoroPreset(mins, element);
 }
 
 function startTimer() {
@@ -368,12 +460,22 @@ function addTask() {
     const dueDateInput = document.getElementById("dueDate");
     const totalWorkInput = document.getElementById("totalWork");
     const completedWorkInput = document.getElementById("completedWork");
+    const subtasksInput = document.getElementById("subtasksInput");
 
     const title = titleInput.value.trim();
     if (!title) {
         alert("Please enter a task title.");
         titleInput.focus();
         return;
+    }
+
+    let initialSubtasks = [];
+    if (subtasksInput && subtasksInput.value.trim()) {
+        initialSubtasks = subtasksInput.value
+            .split(",")
+            .map(s => s.trim())
+            .filter(Boolean)
+            .map((text, idx) => ({ id: Date.now() + idx, text: text, completed: false }));
     }
 
     const newTask = {
@@ -383,11 +485,12 @@ function addTask() {
         subject: subjectInput.value.trim(),
         priority: priorityInput.value,
         dueDate: dueDateInput.value,
-        totalWork: Math.max(0, Number(totalWorkInput.value) || 0),
+        totalWork: Math.max(0, Number(totalWorkInput.value) || initialSubtasks.length || 0),
         completedWork: Math.max(0, Number(completedWorkInput.value) || 0),
         completed: false,
         actualSeconds: 0,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        subtasks: initialSubtasks
     };
 
     if (newTask.totalWork > 0 && newTask.completedWork >= newTask.totalWork) {
@@ -405,6 +508,7 @@ function addTask() {
     dueDateInput.value = "";
     totalWorkInput.value = "";
     completedWorkInput.value = "";
+    if (subtasksInput) subtasksInput.value = "";
 
     // Auto select newly added task for convenience
     selectTaskForTimer(newTask.id);
@@ -492,6 +596,11 @@ function openEditTaskModal(id, event) {
     document.getElementById("editTotalWork").value = task.totalWork || "";
     document.getElementById("editCompletedWork").value = task.completedWork || "";
 
+    const editSubtasksEl = document.getElementById("editSubtasks");
+    if (editSubtasksEl) {
+        editSubtasksEl.value = (task.subtasks || []).map(s => s.text).join(", ");
+    }
+
     openModal("editTaskModal");
 }
 
@@ -513,6 +622,26 @@ function saveEditedTask() {
     task.totalWork = Math.max(0, Number(document.getElementById("editTotalWork").value) || 0);
     task.completedWork = Math.max(0, Number(document.getElementById("editCompletedWork").value) || 0);
 
+    const editSubtasksEl = document.getElementById("editSubtasks");
+    if (editSubtasksEl) {
+        const rawSubtasks = editSubtasksEl.value.trim();
+        if (rawSubtasks) {
+            const list = rawSubtasks.split(",").map(s => s.trim()).filter(Boolean);
+            const existingMap = new Map((task.subtasks || []).map(s => [s.text.toLowerCase(), s.completed]));
+            task.subtasks = list.map((text, idx) => ({
+                id: Date.now() + idx,
+                text: text,
+                completed: existingMap.get(text.toLowerCase()) || false
+            }));
+            if (task.totalWork === 0 || task.totalWork < task.subtasks.length) {
+                task.totalWork = task.subtasks.length;
+                task.completedWork = task.subtasks.filter(s => s.completed).length;
+            }
+        } else {
+            task.subtasks = [];
+        }
+    }
+
     if (task.totalWork > 0 && task.completedWork >= task.totalWork) {
         task.completed = true;
         if (!task.completedAt) task.completedAt = new Date().toISOString();
@@ -528,6 +657,94 @@ function saveEditedTask() {
 
     if (activeTask && activeTask.id === task.id) {
         document.getElementById("timerTaskName").innerText = task.title;
+    }
+}
+
+// Subtasks interactive management
+function toggleSubtask(taskId, subtaskId, event) {
+    if (event) event.stopPropagation();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.subtasks) return;
+
+    const sub = task.subtasks.find(s => s.id === subtaskId);
+    if (!sub) return;
+
+    sub.completed = !sub.completed;
+
+    const completedCount = task.subtasks.filter(s => s.completed).length;
+    task.completedWork = completedCount;
+    task.totalWork = task.subtasks.length;
+
+    const prevCompleted = task.completed;
+    if (completedCount === task.subtasks.length && task.subtasks.length > 0) {
+        task.completed = true;
+        if (!task.completedAt) task.completedAt = new Date().toISOString();
+        if (!prevCompleted) launchConfetti();
+    } else {
+        task.completed = false;
+        delete task.completedAt;
+    }
+
+    saveDatabase();
+    displayTasks();
+    updateGlobalStats();
+}
+
+function deleteSubtask(taskId, subtaskId, event) {
+    if (event) event.stopPropagation();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.subtasks) return;
+
+    task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+    if (task.subtasks.length > 0) {
+        task.totalWork = task.subtasks.length;
+        task.completedWork = task.subtasks.filter(s => s.completed).length;
+    }
+
+    saveDatabase();
+    displayTasks();
+    updateGlobalStats();
+}
+
+function addSubtaskToTask(taskId, text) {
+    const trimmed = (text || "").trim();
+    if (!trimmed) return;
+
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    if (!task.subtasks) task.subtasks = [];
+    task.subtasks.push({
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        text: trimmed,
+        completed: false
+    });
+
+    task.totalWork = task.subtasks.length;
+    task.completedWork = task.subtasks.filter(s => s.completed).length;
+    task.completed = false;
+    delete task.completedAt;
+
+    saveDatabase();
+    displayTasks();
+    updateGlobalStats();
+}
+
+function handleSubtaskInput(taskId, event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        addSubtaskToTask(taskId, event.target.value);
+        event.target.value = "";
+    }
+}
+
+function addSubtaskFromInput(taskId, event) {
+    if (event) event.stopPropagation();
+    const container = event.target.closest(".add-subtask-row");
+    const input = container ? container.querySelector(".subtask-input") : null;
+    if (input && input.value.trim()) {
+        addSubtaskToTask(taskId, input.value);
+        input.value = "";
     }
 }
 
@@ -699,6 +916,29 @@ function displayTasks() {
                     </div>
                 </div>
             ` : ""}
+
+            <div class="subtasks-section" onclick="event.stopPropagation()">
+                <div class="subtasks-header">
+                    <span>☑️ Milestones & Subtasks (${(task.subtasks || []).filter(s => s.completed).length}/${(task.subtasks || []).length})</span>
+                </div>
+                ${(task.subtasks && task.subtasks.length > 0) ? `
+                    <div class="subtasks-list">
+                        ${task.subtasks.map(s => `
+                            <div class="subtask-item ${s.completed ? 'subtask-done' : ''}">
+                                <input type="checkbox" class="subtask-checkbox" ${s.completed ? 'checked' : ''} 
+                                       onchange="toggleSubtask(${task.id}, ${s.id}, event)" title="Mark milestone complete">
+                                <span class="subtask-text">${escapeHTML(s.text)}</span>
+                                <button class="subtask-del-btn" onclick="deleteSubtask(${task.id}, ${s.id}, event)" title="Remove subtask">✕</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ""}
+                <div class="add-subtask-row">
+                    <input type="text" class="subtask-input" placeholder="Add milestone... (press Enter)"
+                           onkeydown="handleSubtaskInput(${task.id}, event)">
+                    <button class="subtask-add-btn" onclick="addSubtaskFromInput(${task.id}, event)" title="Add milestone">＋</button>
+                </div>
+            </div>
 
             <div class="task-bottom-row">
                 <div class="task-time-badge" id="task-time-${task.id}">
@@ -899,7 +1139,7 @@ function exportJSONBackup() {
 }
 
 function exportCSVData() {
-    const headers = ["Title", "Category", "Subject", "Priority", "Due Date", "Completed Work", "Total Goal", "Time Spent (Seconds)", "Is Completed", "Completed At"];
+    const headers = ["Title", "Category", "Subject", "Priority", "Due Date", "Completed Work", "Total Goal", "Time Spent (Seconds)", "Is Completed", "Completed At", "Subtasks"];
     const rows = tasks.map(t => [
         `"${(t.title || '').replace(/"/g, '""')}"`,
         `"${t.category || ''}"`,
@@ -910,7 +1150,8 @@ function exportCSVData() {
         t.totalWork || 0,
         t.actualSeconds || 0,
         t.completed ? "Yes" : "No",
-        `"${t.completedAt || ''}"`
+        `"${t.completedAt || ''}"`,
+        `"${(t.subtasks || []).map(s => `${s.completed ? '[x]' : '[ ]'} ${s.text}`).join('; ').replace(/"/g, '""')}"`
     ]);
 
     // Prepend UTF-8 Byte Order Mark (\uFEFF) for Excel compatibility

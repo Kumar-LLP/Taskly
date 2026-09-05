@@ -3,7 +3,7 @@
    Stale-While-Revalidate caching for resilient offline performance
    ========================================================================== */
 
-const CACHE_NAME = "taskly-v1.1";
+const CACHE_NAME = "taskly-v1.2";
 const ASSETS_TO_CACHE = [
     "./",
     "./index.html",

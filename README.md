@@ -8,11 +8,16 @@
 
 ### 🍅 Dual-Mode Focus Timer (Pomodoro & Stopwatch)
 - **High-Precision Delta Timing**: Uses `Date.now()` timestamp deltas to ensure 100% timekeeping accuracy even when browser tabs are throttled in the background.
+- **Customizable Pomodoro Presets**: One-click deep focus presets (`25m Focus`, `5m Break`, `15m Rest`, `50m Deep`) plus custom duration input (`⚙️ Custom`) between 1 and 180 minutes.
+- **Multi-Tone Synthesizer**: 4 offline audio sound profiles generated via the **Web Audio API** (🎵 Melodic Chime, 🧘 Zen Bell, ⏰ Digital Beep, 🌴 Upbeat Marimba) with sound previewing.
 - **Stopwatch Mode**: Track real-time study and activity duration continuously.
-- **Pomodoro Mode**: One-click presets for deep focus (`25m Focus`, `5m Short Break`, `15m Rest`, `50m Deep Work`).
-- **Offline Audio Chime**: Synthesized chime generated via native **Web Audio API** when timers complete (no external audio downloads needed).
 - **Live Tab Sync**: Synchronizes current session time and countdown directly in your browser's tab title (e.g. `(🍅 24:12) Taskly`).
 - **Unload Protection**: Automatically persists timer progress to `localStorage` even if the browser window is unexpectedly closed or refreshed.
+
+### ☑️ Interactive Subtasks & Milestone Checklists
+- **Breakdown Tasks**: Add detailed milestone checklists to any task card to tackle large goals step by step.
+- **Dynamic Auto-Tracking**: Checking off subtasks automatically recalculates task progress and triggers celebration confetti when all milestones are accomplished.
+- **Inline Rapid Entry**: Quickly type new subtasks directly on task cards without opening an edit modal.
 
 ### ⌨️ Global Keyboard Shortcuts
 - **`Space`**: Quickly toggle Start / Pause on the active timer session from anywhere.
@@ -24,6 +29,7 @@
 - **Installable**: Install Taskly as a native standalone app on Windows, macOS, Android, and iOS.
 - **Service Worker (`sw.js`)**: Caches essential HTML, CSS, JavaScript, and SVG assets for dependable offline-first reliability.
 - **Web App Manifest (`manifest.json`)**: Configured with standalone display, dark theme colors, and vector icon branding.
+- **Automated GitHub Actions Deployment**: Includes `.github/workflows/deploy.yml` for instant, zero-config publishing to GitHub Pages on push.
 
 ### ⚡ Smart Task Management & Quick Progress Logging
 - **Instant `[+]` / `[-]` Progress**: Click buttons on task cards to quickly increment completed exercises, chapters, or units without opening an edit modal.
