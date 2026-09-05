@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taskly - Study & Activity Organizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Particle Confetti Canvas Layer -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Top Navigation Bar -->
+    <nav>
+        <div class="logo" onclick="switchTab('home')">
+            Taskly<span class="logo-dot"></span>
+        </div>
+
+        <ul class="nav-links">
+            <li><a id="nav-home" class="active-link" onclick="switchTab('home')">Home</a></li>
+            <li><a id="nav-dashboard" onclick="switchTab('dashboard')">Dashboard</a></li>
+            <li><a onclick="openModal('contactModal')">Contact Us</a></li>
+        </ul>
+
+        <div class="nav-actions">
+            <button id="themeToggleBtn" class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">
+                🌙
+            </button>
+            <button class="icon-btn" onclick="openModal('backupModal')" title="Backup & Restore Data">
+                💾
+            </button>
+            <button class="btn-secondary" onclick="openModal('loginModal')">
+                Log In
+            </button>
+            <button class="btn-primary" onclick="switchTab('dashboard')">
+                Dashboard →
+            </button>
+        </div>
+    </nav>
+
+    <!-- ==========================================================================
+         PAGE VIEW 1: LANDING / HOMEPAGE
+         ========================================================================== -->
+    <main id="home-view" class="page-view active-view">
+        <section class="hero">
+            <div class="hero-text">
+                <div class="welcome-badge">✨ Next-Gen Productivity System</div>
+                <h1>Organize your study, tasks & <span>time accurately.</span></h1>
+                <p>
+                    Plan your academic homework, focus with built-in Pomodoro sessions, log continuous progress, 
+                    and track sports and daily habits with rich visual analytics.
+                </p>
+
+                <div class="hero-actions">
+                    <button class="btn-primary" style="padding: 14px 28px; font-size: 16px;" onclick="switchTab('dashboard')">
+                        🚀 Open Dashboard
+                    </button>
+                    <button class="btn-secondary" style="padding: 14px 28px; font-size: 16px;" onclick="openModal('contactModal')">
+                        Contact Us
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive Landing Widget Preview -->
+            <div class="app-preview-wrapper">
+                <div class="app-preview">
+                    <div class="preview-header">
+                        <div class="preview-title-group">
+                            <h3>Live Tracker</h3>
+                            <div class="live-indicator">
+                                <span class="pulse-dot"></span> Active
+                            </div>
+                        </div>
+                        <span style="font-size: 12px; color: var(--text-muted); font-weight: 700;">Realtime Sync</span>
+                    </div>
+
+                    <div class="preview-card-item">
+                        <div class="card-left-content">
+                            <div class="subject-icon">📐</div>
+                            <div class="card-details">
+                                <h4>Calculus Problem Set</h4>
+                                <p><span class="badge badge-category">Study</span> • Derivatives</p>
+                            </div>
+                        </div>
+                        <div class="timer-badge">
+                            <span class="time-text">00:45:20</span>
+                            <span class="status-sub">In Session</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-card-item secondary">
+                        <div class="card-left-content">
+                            <div class="subject-icon green">⚡</div>
+                            <div class="card-details">
+                                <h4>Physics Numerical Practice</h4>
+                                <p><span class="badge badge-category">Science</span> • Chapter 4</p>
+                            </div>
+                        </div>
+                        <div class="timer-badge">
+                            <span class="time-text" style="color: var(--success);">01:10:00</span>
+                            <span class="status-sub">Completed</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-footer-stats">
+                        <div class="stat-mini-item">
+                            <span>Today's Target</span>
+                            <strong>85% Done</strong>
+                        </div>
+                        <div class="stat-mini-item">
+                            <span>Focus Score</span>
+                            <strong>94/100</strong>
+                        </div>
+                        <div class="stat-mini-item">
+                            <span>Daily Streak</span>
+                            <strong>🔥 7 Days</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Highlights Grid -->
+        <section class="features-section">
+            <div class="section-title">
+                <h2>Built for Focused Minds</h2>
+                <p>Everything you need to master your schedule without clutter or friction.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🍅</div>
+                    <h3>Pomodoro & Stopwatch</h3>
+                    <p>Alternate between 25-minute deep focus sprints and short breaks, complete with synthesized audio alerts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Quick Progress Logging</h3>
+                    <p>Increment problems solved or chapters read directly from task cards with intuitive (+/-) buttons.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Weekly Visual Charts</h3>
+                    <p>Analyze your study habits with HTML5 Canvas performance charts and an active daily streak counter.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌙</div>
+                    <h3>Theme & Offline Privacy</h3>
+                    <p>Seamless dark mode for night owls, fully private local storage, and one-click JSON/CSV backups.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==========================================================================
+         PAGE VIEW 2: DASHBOARD
+         ========================================================================== -->
+    <main id="dashboard-view" class="page-view">
+        <div class="dashboard-container">
+
+            <!-- Header with Live Clock & Timezones -->
+            <header class="header">
+                <div>
+                    <h1>Productivity Dashboard 👋</h1>
+                    <p id="date">Loading date...</p>
+                </div>
+                <div class="clock-card">
+                    <select id="timezoneSelect" class="timezone-select" onchange="updateDateTime()">
+                        <option value="local">📍 Local Time</option>
+                        <option value="Asia/Kathmandu">🇳🇵 Kathmandu</option>
+                        <option value="Asia/Kolkata">🇮🇳 Delhi</option>
+                        <option value="Europe/London">🇬🇧 London</option>
+                        <option value="America/New_York">🇺🇸 New York</option>
+                        <option value="Asia/Tokyo">🇯🇵 Tokyo</option>
+                    </select>
+                    <div class="clock" id="clock">00:00:00</div>
+                </div>
+            </header>
+
+            <!-- 4 Top Statistics Cards -->
+            <section class="stats">
+                <div class="stat">
+                    <span class="stat-icon">📋</span>
+                    <p>Total Tasks</p>
+                    <h2 id="totalTasks">0</h2>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">✅</span>
+                    <p>Completed</p>
+                    <h2 id="completedTasks" style="color: var(--success);">0</h2>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">⏳</span>
+                    <p>Remaining</p>
+                    <h2 id="remainingTasks" style="color: var(--warning);">0</h2>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">⏱️</span>
+                    <p>Total Time Tracked</p>
+                    <h2 id="totalTime">0s</h2>
+                </div>
+            </section>
+
+            <!-- Analytics & Streak Section -->
+            <section class="analytics-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>📈 Weekly Study & Focus Time</h3>
+                        <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Last 7 Days</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="streak-card">
+                    <div class="streak-card-top">
+                        <span>Current Consistency Streak</span>
+                        <h2 id="streakNumber">🔥 1 Day</h2>
+                        <p style="margin-top: 8px; font-size: 14px; opacity: 0.9;">
+                            Keep up the momentum! Study or complete tasks today to maintain your streak.
+                        </p>
+                    </div>
+                    <div class="streak-footer">
+                        🎯 <strong>Daily Tip:</strong> Small focused 25-minute sprints produce stronger memory retention than marathon cramming.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search, Filters & Sorting Toolbar -->
+            <section class="toolbar-card">
+                <div class="toolbar-top">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="taskSearchInput" placeholder="Search tasks or subjects..." 
+                               oninput="handleSearch(this.value)">
+                    </div>
+
+                    <select class="sort-select" onchange="handleSort(this.value)">
+                        <option value="newest">Sort By: Newest Added</option>
+                        <option value="priority">Sort By: Priority (High → Low)</option>
+                        <option value="dueDate">Sort By: Due Date (Earliest)</option>
+                        <option value="timeSpent">Sort By: Most Time Spent</option>
+                        <option value="title">Sort By: Title (A-Z)</option>
+                    </select>
+                </div>
+
+                <div class="toolbar-pills">
+                    <!-- Category Filter Pills -->
+                    <div class="pill-group">
+                        <button class="filter-pill pill-category active" onclick="filterByCategory('All', this)">All Categories</button>
+                        <button class="filter-pill pill-category" onclick="filterByCategory('Study', this)">📚 Study</button>
+                        <button class="filter-pill pill-category" onclick="filterByCategory('Sports', this)">🏏 Sports</button>
+                        <button class="filter-pill pill-category" onclick="filterByCategory('Fitness', this)">🏃 Fitness</button>
+                        <button class="filter-pill pill-category" onclick="filterByCategory('Personal', this)">🌱 Personal</button>
+                    </div>
+
+                    <!-- Status Filter Pills -->
+                    <div class="pill-group">
+                        <button class="filter-pill pill-status active" onclick="filterByStatus('all', this)">All</button>
+                        <button class="filter-pill pill-status" onclick="filterByStatus('active', this)">Active</button>
+                        <button class="filter-pill pill-status" onclick="filterByStatus('completed', this)">Completed</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content (2-Column Grid) -->
+            <div class="content">
+
+                <!-- Left Column: Task List & Sports Quick Select -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>📋 Task List</h2>
+                            <span style="font-size: 13px; color: var(--text-muted);">
+                                Click a task to start tracking focus time
+                            </span>
+                        </div>
+                        <div id="taskList" class="task-list">
+                            <!-- Tasks populated by app.js -->
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>⚡ Quick Sport & Hobby Preset</h2>
+                        </div>
+                        <div class="sports-grid">
+                            <div class="sport-chip" onclick="chooseSport('Cricket')">🏏 Cricket</div>
+                            <div class="sport-chip" onclick="chooseSport('Football')">⚽ Football</div>
+                            <div class="sport-chip" onclick="chooseSport('Basketball')">🏀 Basketball</div>
+                            <div class="sport-chip" onclick="chooseSport('Badminton')">🏸 Badminton</div>
+                            <div class="sport-chip" onclick="chooseSport('Running')">🏃 Running</div>
+                            <div class="sport-chip" onclick="chooseSport('Gym Workout')">🏋️ Gym Workout</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Timer & Add Task Form -->
+                <div>
+                    <!-- Timer & Pomodoro Widget -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>⏱️ Focus & Activity Timer</h2>
+                        </div>
+
+                        <!-- Mode Switcher Tabs -->
+                        <div class="timer-mode-tabs">
+                            <button id="tabStopwatch" class="timer-tab active" onclick="switchTimerMode('stopwatch')">
+                                ⏱️ Stopwatch
+                            </button>
+                            <button id="tabPomodoro" class="timer-tab" onclick="switchTimerMode('pomodoro')">
+                                🍅 Pomodoro
+                            </button>
+                        </div>
+
+                        <!-- Pomodoro Presets (hidden on stopwatch mode) -->
+                        <div id="pomodoroPresets" class="pomodoro-presets" style="display: none;">
+                            <button class="pomodoro-preset-btn active" onclick="setPomodoroPreset(25, this)">25m Focus</button>
+                            <button class="pomodoro-preset-btn" onclick="setPomodoroPreset(5, this)">5m Break</button>
+                            <button class="pomodoro-preset-btn" onclick="setPomodoroPreset(15, this)">15m Rest</button>
+                            <button class="pomodoro-preset-btn" onclick="setPomodoroPreset(50, this)">50m Deep</button>
+                        </div>
+
+                        <div class="timer-box">
+                            <div id="timerTaskName" class="timer-task-label">Select a task from the list</div>
+                            <div id="timerDisplay" class="timer-display">00:00:00</div>
+
+                            <div class="timer-controls">
+                                <button id="timerStartBtn" class="timer-ctrl-btn timer-start" onclick="startTimer()">
+                                    ▶ Start Session
+                                </button>
+                                <button class="timer-ctrl-btn timer-reset" onclick="resetTimer()">
+                                    ↺ Reset
+                                </button>
+                            </div>
+
+                            <button id="timerSoundBtn" class="timer-sound-btn" onclick="toggleSound()">
+                                🔔 Sound Alert: On
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Add New Task Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>➕ Add New Task</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="title">Task Title</label>
+                            <input id="title" placeholder="e.g., Mathematics Differential Equations" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select id="category">
+                                    <option value="Study">📚 Study</option>
+                                    <option value="Sports">🏏 Sports</option>
+                                    <option value="Fitness">🏃 Fitness</option>
+                                    <option value="Personal">🌱 Personal</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="subject">Subject / Topic</label>
+                                <input id="subject" placeholder="e.g., Calculus / Chapter 3">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="priority">Priority</label>
+                                <select id="priority">
+                                    <option value="medium">⚡ Medium Priority</option>
+                                    <option value="high">🔥 High Priority</option>
+                                    <option value="low">🟢 Low Priority</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="dueDate">Due Date</label>
+                                <input type="date" id="dueDate">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="totalWork">Goal Quantity (Optional)</label>
+                                <input type="number" id="totalWork" min="0" placeholder="e.g., 10 exercises / pages">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="completedWork">Completed Units</label>
+                                <input type="number" id="completedWork" min="0" placeholder="e.g., 2">
+                            </div>
+                        </div>
+
+                        <button class="btn-primary btn-block" onclick="addTask()">
+                            ➕ Add Task / Activity
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ==========================================================================
+         MODALS & OVERLAYS
+         ========================================================================== -->
+
+    <!-- Edit Task Modal -->
+    <div class="modal-overlay" id="editTaskModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>✏️ Edit Task</h2>
+                <button class="modal-close-btn" onclick="closeModal('editTaskModal')">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label for="editTitle">Task Title</label>
+                <input id="editTitle" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editCategory">Category</label>
+                    <select id="editCategory">
+                        <option value="Study">📚 Study</option>
+                        <option value="Sports">🏏 Sports</option>
+                        <option value="Fitness">🏃 Fitness</option>
+                        <option value="Personal">🌱 Personal</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editSubject">Subject / Topic</label>
+                    <input id="editSubject">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editPriority">Priority</label>
+                    <select id="editPriority">
+                        <option value="high">🔥 High Priority</option>
+                        <option value="medium">⚡ Medium Priority</option>
+                        <option value="low">🟢 Low Priority</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editDueDate">Due Date</label>
+                    <input type="date" id="editDueDate">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editTotalWork">Goal Units</label>
+                    <input type="number" id="editTotalWork" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="editCompletedWork">Completed Units</label>
+                    <input type="number" id="editCompletedWork" min="0">
+                </div>
+            </div>
+
+            <button class="btn-primary btn-block" onclick="saveEditedTask()">
+                💾 Save Changes
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Backup & Restore Modal -->
+    <div class="modal-overlay" id="backupModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>💾 Data Backup & Restore</h2>
+                <button class="modal-close-btn" onclick="closeModal('backupModal')">✕</button>
+            </div>
+
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+                Your tasks and time records are stored privately in your browser. Use the options below to download backups or transfer data.
+            </p>
+
+            <div class="backup-actions">
+                <div class="backup-item">
+                    <div class="backup-item-info">
+                        <h4>Download JSON Backup</h4>
+                        <p>Complete data export including tasks and timer history</p>
+                    </div>
+                    <button class="btn-secondary" onclick="exportJSONBackup()">Export JSON</button>
+                </div>
+
+                <div class="backup-item">
+                    <div class="backup-item-info">
+                        <h4>Export to Spreadsheet (CSV)</h4>
+                        <p>Readable table of tasks for Excel or Google Sheets</p>
+                    </div>
+                    <button class="btn-secondary" onclick="exportCSVData()">Export CSV</button>
+                </div>
+
+                <div class="backup-item">
+                    <div class="backup-item-info">
+                        <h4>Restore from JSON File</h4>
+                        <p>Upload a previously exported Taskly backup file</p>
+                    </div>
+                    <label class="btn-primary" style="cursor: pointer;">
+                        Choose File
+                        <input type="file" accept=".json" style="display: none;" onchange="importJSONFile(this)">
+                    </label>
+                </div>
+
+                <div class="backup-item" style="border-color: var(--danger-border);">
+                    <div class="backup-item-info">
+                        <h4 style="color: var(--danger);">Reset All Data</h4>
+                        <p>Clear all tasks and timer records</p>
+                    </div>
+                    <button class="btn-secondary" style="color: var(--danger); border-color: var(--danger);" onclick="resetAllData()">
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Modal (Mock Demo) -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Welcome to Taskly</h2>
+                <button class="modal-close-btn" onclick="closeModal('loginModal')">✕</button>
+            </div>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">
+                Sign in to sync your study data across devices.
+            </p>
+
+            <div class="social-login-group">
+                <button class="social-btn" onclick="handleMockAuth('Google')">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.27 7.35 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.05 0 12s.47 3.79 1.29 5.42l3.99-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.73 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    Continue with Google
+                </button>
+                <button class="social-btn" onclick="handleMockAuth('GitHub')">
+                    🐙 Continue with GitHub
+                </button>
+            </div>
+
+            <div class="auth-divider">
+                <span>Or email</span>
+            </div>
+
+            <form onsubmit="event.preventDefault(); handleMockAuth('Email');">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" placeholder="student@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary btn-block">
+                    Log In / Sign Up
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Us Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal-card" style="text-align: center;">
+            <div class="modal-header">
+                <h2>📞 Contact Support</h2>
+                <button class="modal-close-btn" onclick="closeModal('contactModal')">✕</button>
+            </div>
+            <p style="font-size: 15px; margin: 16px 0; color: var(--text-main);">
+                Have feedback, questions, or feature requests? Reach out anytime!
+            </p>
+            <div style="background: var(--bg-surface-subtle); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                <p><strong>Email:</strong> <a href="mailto:peek.exc@gmail.com" style="color: var(--accent-primary);">peek.exc@gmail.com</a></p>
+                <p style="margin-top: 8px;"><strong>Phone:</strong> <a href="tel:+9779744363847" style="color: var(--accent-primary);">+977 9744363847</a></p>
+            </div>
+            <button class="btn-primary btn-block" onclick="closeModal('contactModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        © 2026 Taskly • Modern Study & Activity Organizer. Designed for focus and clarity.
+    </footer>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+
+</html>
