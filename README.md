@@ -7,14 +7,27 @@
 ## ✨ Features
 
 ### 🍅 Dual-Mode Focus Timer (Pomodoro & Stopwatch)
+- **High-Precision Delta Timing**: Uses `Date.now()` timestamp deltas to ensure 100% timekeeping accuracy even when browser tabs are throttled in the background.
 - **Stopwatch Mode**: Track real-time study and activity duration continuously.
 - **Pomodoro Mode**: One-click presets for deep focus (`25m Focus`, `5m Short Break`, `15m Rest`, `50m Deep Work`).
-- **Offline Audio Chime**: Synthesized chime generated via the native **Web Audio API** when timers complete (no external audio downloads needed).
+- **Offline Audio Chime**: Synthesized chime generated via native **Web Audio API** when timers complete (no external audio downloads needed).
 - **Live Tab Sync**: Synchronizes current session time and countdown directly in your browser's tab title (e.g. `(🍅 24:12) Taskly`).
+- **Unload Protection**: Automatically persists timer progress to `localStorage` even if the browser window is unexpectedly closed or refreshed.
+
+### ⌨️ Global Keyboard Shortcuts
+- **`Space`**: Quickly toggle Start / Pause on the active timer session from anywhere.
+- **`Ctrl + K` / `Cmd + K` or `/`**: Instantly jump to and focus the search and filter input.
+- **`Esc`**: Close any active modal dialog or backdrop.
+- **`?`**: Pop up the built-in keyboard shortcuts reference card.
+
+### 📱 Progressive Web App (PWA) & Offline Engine
+- **Installable**: Install Taskly as a native standalone app on Windows, macOS, Android, and iOS.
+- **Service Worker (`sw.js`)**: Caches essential HTML, CSS, JavaScript, and SVG assets for dependable offline-first reliability.
+- **Web App Manifest (`manifest.json`)**: Configured with standalone display, dark theme colors, and vector icon branding.
 
 ### ⚡ Smart Task Management & Quick Progress Logging
 - **Instant `[+]` / `[-]` Progress**: Click buttons on task cards to quickly increment completed exercises, chapters, or units without opening an edit modal.
-- **Auto Completion**: Tasks automatically check off with a celebratory confetti particle effect when goals are met.
+- **Auto Completion**: Tasks automatically check off with a celebratory confetti particle effect when goals are met, logging an exact completion timestamp.
 - **Priority & Due Dates**:
   - Priority levels: 🔥 **High**, ⚡ **Medium**, 🟢 **Low**.
   - Dynamic deadline badges: **⚠️ Overdue**, **⏰ Due Today**, or **📅 Upcoming**.
@@ -29,7 +42,7 @@
 
 ### 📈 Visual Analytics & Habit Streaks
 - **HTML5 Canvas Weekly Focus Chart**: Lightweight, responsive bar chart visualizing study time in minutes over the last 7 days.
-- **Consistency Streak Tracker**: Tracks consecutive active study days (`🔥 X Days`) to build daily momentum.
+- **Consistency Streak Tracker**: Tracks consecutive active study days (`🔥 X Days`) to build daily momentum based on logged focus time and task completions.
 - **Live Stats Dashboard**: Instant overview of Total Tasks, Completed, Remaining, and Total Study Hours logged.
 
 ### 🌙 Modern UI & Dark Mode
@@ -39,7 +52,7 @@
 ### 💾 Private Offline Storage, Backup & Restore
 - **Zero Cloud Dependence**: All data resides safely in your browser's `localStorage`.
 - **JSON Backup**: Download full data backups and restore them on any device.
-- **CSV Export**: Export your tasks and time tracking directly into a spreadsheet-ready `.csv` file.
+- **CSV Export**: Export your tasks and time tracking directly into a spreadsheet-ready `.csv` file with UTF-8 BOM encoding for Microsoft Excel.
 
 ---
 
@@ -51,8 +64,10 @@ PROJECT 1'/
 ├── index.html                  # Main application markup & layout
 ├── style.css                   # Modern CSS variables, light/dark themes, responsive layout
 ├── app.js                      # Core application logic (Timer, Tasks, Analytics, Backup)
-├── README.md                   # Project documentation
-└── gemini-code-1788604040738.html # Original single-file backup
+├── manifest.json               # Progressive Web App manifest
+├── sw.js                       # Service Worker for offline asset caching
+├── icon.svg                    # Vector app icon & favicon
+└── README.md                   # Project documentation
 ```
 
 ---

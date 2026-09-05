@@ -4,7 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="description" content="Modern, lightweight, offline-first study & activity organizer with Pomodoro focus timer and visual analytics.">
     <title>Taskly - Study & Activity Organizer</title>
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -28,6 +33,9 @@
         <div class="nav-actions">
             <button id="themeToggleBtn" class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">
                 🌙
+            </button>
+            <button class="icon-btn" onclick="openModal('shortcutsModal')" title="Keyboard Shortcuts (?)">
+                ⌨️
             </button>
             <button class="icon-btn" onclick="openModal('backupModal')" title="Backup & Restore Data">
                 💾
@@ -235,7 +243,7 @@
                 <div class="toolbar-top">
                     <div class="search-box">
                         <span class="search-icon">🔍</span>
-                        <input type="text" id="taskSearchInput" placeholder="Search tasks or subjects..." 
+                        <input type="text" id="taskSearchInput" placeholder="Search tasks or subjects... (Ctrl+K)" 
                                oninput="handleSearch(this.value)">
                     </div>
 
@@ -330,7 +338,7 @@
                             <div id="timerDisplay" class="timer-display">00:00:00</div>
 
                             <div class="timer-controls">
-                                <button id="timerStartBtn" class="timer-ctrl-btn timer-start" onclick="startTimer()">
+                                <button id="timerStartBtn" class="timer-ctrl-btn timer-start" onclick="startTimer()" title="Shortcut: Spacebar">
                                     ▶ Start Session
                                 </button>
                                 <button class="timer-ctrl-btn timer-reset" onclick="resetTimer()">
@@ -574,6 +582,38 @@
                     Log In / Sign Up
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal-overlay" id="shortcutsModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>⌨️ Keyboard Shortcuts</h2>
+                <button class="modal-close-btn" onclick="closeModal('shortcutsModal')">✕</button>
+            </div>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 18px;">
+                Boost your productivity with these built-in quick shortcuts:
+            </p>
+            <div class="shortcuts-list">
+                <div class="shortcut-row">
+                    <span class="shortcut-desc">Start / Pause Focus Timer</span>
+                    <kbd class="shortcut-key">Space</kbd>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-desc">Focus Search & Filters</span>
+                    <span class="shortcut-keys"><kbd class="shortcut-key">Ctrl</kbd> + <kbd class="shortcut-key">K</kbd> / <kbd class="shortcut-key">/</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-desc">Close Active Modal / Dialog</span>
+                    <kbd class="shortcut-key">Esc</kbd>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-desc">Open Shortcuts Cheat Sheet</span>
+                    <kbd class="shortcut-key">?</kbd>
+                </div>
+            </div>
+            <button class="btn-primary btn-block" style="margin-top: 20px;" onclick="closeModal('shortcutsModal')">Got It!</button>
         </div>
     </div>
 

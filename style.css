@@ -1481,6 +1481,50 @@ input:focus, select:focus, textarea:focus {
     padding: 0 12px;
 }
 
+/* Keyboard Shortcuts Cheat Sheet */
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.shortcut-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg-surface-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+.shortcut-desc {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.shortcut-keys {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.shortcut-key {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 0 var(--border-color);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 700;
+    color: var(--accent-primary);
+    display: inline-block;
+}
+
 /* ==========================================================================
    Footer
    ========================================================================== */

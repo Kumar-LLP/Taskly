@@ -61,6 +61,7 @@ let dailyStats = JSON.parse(localStorage.getItem(STORAGE_KEYS.DAILY_STATS)) || {
 // Timer State
 let activeTask = null;
 let timerInterval = null;
+let timerLastTimestamp = null;
 let timerMode = "stopwatch"; // "stopwatch" | "pomodoro"
 let pomodoroDuration = 25 * 60; // default 25 mins
 let pomodoroRemaining = 25 * 60;
@@ -229,37 +230,47 @@ function startTimer() {
     if (timerInterval) return; // Already running
 
     isTimerRunning = true;
+    timerLastTimestamp = Date.now();
     updateTimerControlButtons();
 
     timerInterval = setInterval(() => {
-        const todayKey = new Date().toISOString().split('T')[0];
+        const now = Date.now();
+        const deltaMs = now - timerLastTimestamp;
 
-        if (timerMode === "stopwatch") {
-            activeTask.actualSeconds = (activeTask.actualSeconds || 0) + 1;
-            recordDailyStudySeconds(todayKey, 1);
-            renderTimerDisplay();
-            updateTaskCardTime(activeTask.id);
-            syncBrowserTitle(formatSecondsCompact(activeTask.actualSeconds));
-        } else {
-            // Pomodoro mode
-            if (pomodoroRemaining > 0) {
-                pomodoroRemaining--;
-                activeTask.actualSeconds = (activeTask.actualSeconds || 0) + 1;
-                recordDailyStudySeconds(todayKey, 1);
+        if (deltaMs >= 1000) {
+            const deltaSeconds = Math.floor(deltaMs / 1000);
+            timerLastTimestamp += deltaSeconds * 1000;
+            const todayKey = new Date().toISOString().split('T')[0];
+
+            if (timerMode === "stopwatch") {
+                activeTask.actualSeconds = (activeTask.actualSeconds || 0) + deltaSeconds;
+                recordDailyStudySeconds(todayKey, deltaSeconds);
                 renderTimerDisplay();
                 updateTaskCardTime(activeTask.id);
-                syncBrowserTitle(formatMMSS(pomodoroRemaining));
+                syncBrowserTitle(formatSecondsCompact(activeTask.actualSeconds));
+            } else {
+                // Pomodoro mode
+                if (pomodoroRemaining > 0) {
+                    const actualDelta = Math.min(pomodoroRemaining, deltaSeconds);
+                    pomodoroRemaining -= actualDelta;
+                    activeTask.actualSeconds = (activeTask.actualSeconds || 0) + actualDelta;
+                    recordDailyStudySeconds(todayKey, actualDelta);
+                    renderTimerDisplay();
+                    updateTaskCardTime(activeTask.id);
+                    syncBrowserTitle(formatMMSS(pomodoroRemaining));
 
-                if (pomodoroRemaining === 0) {
-                    pauseTimer();
-                    playTimerChime();
-                    launchConfetti();
-                    alert(`🎉 Pomodoro completed for: ${activeTask.title}! Take a well-deserved break.`);
+                    if (pomodoroRemaining === 0) {
+                        pauseTimer();
+                        playTimerChime();
+                        launchConfetti();
+                        alert(`🎉 Pomodoro completed for: ${activeTask.title}! Take a well-deserved break.`);
+                    }
                 }
             }
+            updateGlobalStats();
+            saveDatabase();
         }
-        updateGlobalStats();
-    }, 1000);
+    }, 250);
 }
 
 function pauseTimer() {
@@ -267,6 +278,7 @@ function pauseTimer() {
         clearInterval(timerInterval);
         timerInterval = null;
     }
+    timerLastTimestamp = null;
     isTimerRunning = false;
     updateTimerControlButtons();
     saveDatabase();
@@ -324,10 +336,12 @@ function updateTimerControlButtons() {
         if (isTimerRunning) {
             startBtn.innerHTML = "⏸ Pause Timer";
             startBtn.className = "timer-ctrl-btn timer-pause";
+            startBtn.title = "Shortcut: Spacebar";
             startBtn.onclick = pauseTimer;
         } else {
             startBtn.innerHTML = "▶ Start Session";
             startBtn.className = "timer-ctrl-btn timer-start";
+            startBtn.title = "Shortcut: Spacebar";
             startBtn.onclick = startTimer;
         }
     }
@@ -378,6 +392,7 @@ function addTask() {
 
     if (newTask.totalWork > 0 && newTask.completedWork >= newTask.totalWork) {
         newTask.completed = true;
+        newTask.completedAt = new Date().toISOString();
     }
 
     tasks.unshift(newTask);
@@ -402,10 +417,13 @@ function toggleTaskComplete(id, event) {
 
     task.completed = !task.completed;
     if (task.completed) {
+        task.completedAt = new Date().toISOString();
         launchConfetti();
         if (task.totalWork > 0 && task.completedWork < task.totalWork) {
             task.completedWork = task.totalWork;
         }
+    } else {
+        delete task.completedAt;
     }
 
     saveDatabase();
@@ -425,9 +443,11 @@ function changeTaskProgress(id, delta, event) {
         if (task.completedWork >= task.totalWork) {
             task.completedWork = task.totalWork;
             task.completed = true;
+            if (!task.completedAt) task.completedAt = new Date().toISOString();
             if (!prevCompleted) launchConfetti();
         } else {
             task.completed = false;
+            delete task.completedAt;
         }
     }
 
@@ -495,6 +515,10 @@ function saveEditedTask() {
 
     if (task.totalWork > 0 && task.completedWork >= task.totalWork) {
         task.completed = true;
+        if (!task.completedAt) task.completedAt = new Date().toISOString();
+    } else if (task.totalWork > 0 && task.completedWork < task.totalWork && task.completed) {
+        task.completed = false;
+        delete task.completedAt;
     }
 
     saveDatabase();
@@ -727,7 +751,10 @@ function calculateStreak() {
         const key = d.toISOString().split('T')[0];
 
         const hasActivity = (dailyStats[key] && dailyStats[key] > 0) || 
-                            tasks.some(t => t.completed && t.createdAt && t.createdAt.startsWith(key));
+                            tasks.some(t => t.completed && (
+                                (t.completedAt && t.completedAt.startsWith(key)) ||
+                                (!t.completedAt && t.createdAt && t.createdAt.startsWith(key))
+                            ));
 
         if (hasActivity) {
             streak++;
@@ -872,7 +899,7 @@ function exportJSONBackup() {
 }
 
 function exportCSVData() {
-    const headers = ["Title", "Category", "Subject", "Priority", "Due Date", "Completed Work", "Total Goal", "Time Spent (Seconds)", "Is Completed"];
+    const headers = ["Title", "Category", "Subject", "Priority", "Due Date", "Completed Work", "Total Goal", "Time Spent (Seconds)", "Is Completed", "Completed At"];
     const rows = tasks.map(t => [
         `"${(t.title || '').replace(/"/g, '""')}"`,
         `"${t.category || ''}"`,
@@ -882,10 +909,12 @@ function exportCSVData() {
         t.completedWork || 0,
         t.totalWork || 0,
         t.actualSeconds || 0,
-        t.completed ? "Yes" : "No"
+        t.completed ? "Yes" : "No",
+        `"${t.completedAt || ''}"`
     ]);
 
-    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    // Prepend UTF-8 Byte Order Mark (\uFEFF) for Excel compatibility
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -961,6 +990,16 @@ function openModal(modalId) {
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.remove("active");
+}
+
+function initModalBackdrops() {
+    document.querySelectorAll(".modal-overlay").forEach(overlay => {
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) {
+                overlay.classList.remove("active");
+            }
+        });
+    });
 }
 
 function handleMockAuth(provider) {
@@ -1079,8 +1118,72 @@ function escapeHTML(str) {
 }
 
 // ==========================================================================
-// 13. APP BOOTSTRAP
+// 13. KEYBOARD SHORTCUTS & APP BOOTSTRAP
 // ==========================================================================
+
+function initKeyboardShortcuts() {
+    window.addEventListener("keydown", (e) => {
+        // 1. Esc key closes any active modal
+        if (e.key === "Escape") {
+            const activeModal = document.querySelector(".modal-overlay.active");
+            if (activeModal) {
+                activeModal.classList.remove("active");
+                return;
+            }
+        }
+
+        const activeTag = document.activeElement ? document.activeElement.tagName : "";
+        const isTyping = ["INPUT", "TEXTAREA", "SELECT"].includes(activeTag) ||
+                         (document.activeElement && document.activeElement.isContentEditable);
+
+        // 2. Ctrl+K or Cmd+K or '/' to focus search input
+        if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") || (!isTyping && e.key === "/")) {
+            e.preventDefault();
+            switchTab("dashboard");
+            const searchInput = document.getElementById("taskSearchInput");
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+            return;
+        }
+
+        // 3. '?' opens keyboard shortcuts cheat sheet
+        if (!isTyping && e.key === "?") {
+            e.preventDefault();
+            openModal("shortcutsModal");
+            return;
+        }
+
+        // 4. Spacebar toggles start / pause on focus timer (when not typing and no modal open)
+        if (e.code === "Space" && !isTyping) {
+            const hasActiveModal = document.querySelector(".modal-overlay.active");
+            if (!hasActiveModal) {
+                e.preventDefault();
+                if (isTimerRunning) {
+                    pauseTimer();
+                } else {
+                    startTimer();
+                }
+            }
+        }
+    });
+
+    // Automatically pause timer and commit state to localStorage when tab closes or refreshes
+    window.addEventListener("beforeunload", () => {
+        if (isTimerRunning) {
+            pauseTimer();
+        }
+    });
+}
+
+function registerServiceWorker() {
+    if ("serviceWorker" in navigator && window.location.protocol.startsWith("http")) {
+        navigator.serviceWorker.register("./sw.js")
+            .then(reg => console.log("Taskly Service Worker registered:", reg.scope))
+            .catch(err => console.log("Service Worker notice:", err));
+    }
+}
 
 window.addEventListener("DOMContentLoaded", () => {
     initTheme();
@@ -1094,6 +1197,13 @@ window.addEventListener("DOMContentLoaded", () => {
         selectTaskForTimer(tasks[0].id);
     }
     setTimeout(drawWeeklyChart, 150);
+
+    // Initialize keyboard shortcuts & modal dismissal
+    initKeyboardShortcuts();
+    initModalBackdrops();
+
+    // Register PWA Service Worker if served via HTTP/HTTPS
+    registerServiceWorker();
 
     // Responsive redraw of canvas chart
     window.addEventListener("resize", () => {
